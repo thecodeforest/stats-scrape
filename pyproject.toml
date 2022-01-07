@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "stats-scrape"
+version = "0.1.0"
+description = "Sample workflow for automating python script with Github Actions"
+authors = ["Mark LeBoeuf"]
+
+[tool.poetry.dependencies]
+python = "3.8.3"
+awswrangler = "2.12.1"
+beautifulsoup4 = "4.9.3"
+requests = "2.26.0"
+pyjanitor = "0.22.0"
+
+[tool.poetry.dev-dependencies]
+black = "21.10b0"
+pre-commit = "2.15.0"
+flake8 = "4.0.0"
+ipykernel = "^6.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

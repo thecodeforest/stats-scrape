@@ -1,0 +1,63 @@
+# Describe what your workflow does
+name: Refresh NFL Data
+
+# How frequently you need data refreshed
+on: 
+  # schedule:
+  #   - cron: "0 12 * * 3"
+  push:
+    branches: [ main ]
+
+jobs:
+  refresh-data:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    # set our environment variables
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+      S3_BUCKET_NAME: player-data-season
+      AWS_DEFAULT_REGION: us-west-2
+      SEASON_YEAR: 2021      
+      DEBUG: False
+    steps:
+      # check-out the repository <stat-scrape> so job can access all your code
+      - uses: actions/checkout@v2
+      # create a python environment 
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with: 
+          python-version: 3.8.3
+      # install poetry 
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      # if an environment already exists, load it; otherwise create a new one 
+      - name: Load Cached Virtual Environment
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      # if no cache exists, install packages 
+        run: poetry install --no-interaction --no-root
+      # scrape data and save to s3
+      - name: Collect + Load Raw Player Stats Data to S3 
+        run: |
+          source .venv/bin/activate
+          python statsscrape/statsscrape.py --s3_bucket "$S3_BUCKET_NAME" --year $SEASON_YEAR --debug $DEBUG
+      # install AWS command line interface
+      - name: Install AWS CLI
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2 
+          verbose: false 
+      # save log file to S3 bucket
+      - name: Save Log File to S3
+        run: aws s3 cp "player-stats-$(date +'%Y-%m-%d').log" "s3://$S3_BUCKET_NAME/logs/"
