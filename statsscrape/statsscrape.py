@@ -26,12 +26,15 @@ logging.basicConfig(
 
 
 def collect_stats():
+    logging.info(f"Starting collection of player statistics")
     args = read_args()
     season_year = args.year
     s3_bucket = args.s3_bucket
     debug = args.debug
     s3_path = f"s3://{s3_bucket}/data/playerstats/raw/{season_year}/playerstats.csv"
+    logging.info(f"Collecting data for {season_year}")
     logging.info(f"Writing data to {s3_path}")
+    logging.info(f"Running module in Debug mode: {debug}")
     player_id_df = create_player_id_df(season_year=season_year)
     # take the first player returned
     player_name, player_id, _ = player_id_df.iloc[0]
@@ -39,11 +42,12 @@ def collect_stats():
     player_stats_url = f"https://www.pro-football-reference.com/players/{player_last_name_first_letter}/{player_id}.htm"
     # scrape the stats for a single player
     player_stats_df = pd.read_html(player_stats_url)[0]
-    # save data to S3
+    # write locally or save data to S3
     if debug: 
         player_stats_df.to_csv(f"debug_df_season_{season_year}.csv", index=False)
     else:
         wr.s3.to_csv(player_stats_df, s3_path, index=False)
+    logging.info("Completed collection of player statistics")
 
 
 if __name__ == "__main__":
