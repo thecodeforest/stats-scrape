@@ -11,7 +11,7 @@ def read_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Create player id dataframe")
     parser.add_argument("--s3_bucket", type=str, help="s3 bucket name")
     parser.add_argument("--year", type=int, help="Year to create dataframe for")
-    parser.add_argument("--debug", type=bool, help="Run in debug mode")
+    parser.add_argument("--debug", default=False, type=bool, help="Run in debug mode")
     args = parser.parse_args()
     return args
 

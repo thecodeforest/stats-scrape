@@ -20,7 +20,6 @@ jobs:
       S3_BUCKET_NAME: player-data-season
       AWS_DEFAULT_REGION: us-west-2
       SEASON_YEAR: 2021      
-      DEBUG: False
     steps:
       # check-out the repository <stat-scrape> so job can access all your code
       - uses: actions/checkout@v2
@@ -51,7 +50,7 @@ jobs:
       - name: Collect + Load Raw Player Stats Data to S3 
         run: |
           source .venv/bin/activate
-          python statsscrape/statsscrape.py --s3_bucket "$S3_BUCKET_NAME" --year $SEASON_YEAR --debug $DEBUG
+          python statsscrape/statsscrape.py --s3_bucket "$S3_BUCKET_NAME" --year $SEASON_YEAR
       # install AWS command line interface
       - name: Install AWS CLI
         uses: unfor19/install-aws-cli-action@v1
